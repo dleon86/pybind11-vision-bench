@@ -1,0 +1,22 @@
+[build-system]
+requires = ["scikit-build", "setuptools", "wheel", "pybind11"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sobel"
+version = "0.0.1"
+
+# Add this section for Poetry:
+[tool.poetry]
+name = "sobel" 
+version = "0.0.1"
+description = "Sobel edge detection with pybind11"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+pybind11 = "^2.13.6"
+numpy = "^2.2.5"
+matplotlib = "^3.7"
+Pillow = "^10.0"
+
+
