@@ -56,3 +56,33 @@ docker-compose.override.yml
 *.swo
 *~
 .DS_Store
+
+# Benchmark data
+*.pkl
+global_benchmark_results.json
+
+# LaTeX build artifacts
+*.aux
+*.log
+*.nav
+*.out
+*.snm
+*.toc
+*.vrb
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+
+# Project specific (legacy)
+/sobel_comparison.png
+/sobel_comparison_optimized.png
+/lena.png
+/debug_sobel.py
+
+# Keep figures folder but ignore any backup images
+figures/*_backup.*
+figures/temp_*

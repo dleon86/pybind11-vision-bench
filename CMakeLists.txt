@@ -6,6 +6,22 @@ project(sobel)
 
 set(CMAKE_CXX_STANDARD 14)
 
+# Optimization options
+option(USE_UNROLL "Enable loop unrolling" OFF)
+option(USE_SIMD "Enable SIMD optimizations" OFF)
+
+# Add optimization flags
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -DNDEBUG -march=native -ffast-math")
+set(CMAKE_BUILD_TYPE Release)
+
+if (USE_UNROLL)
+    add_compile_options(-funroll-loops)
+endif()
+
+if (USE_SIMD)
+    add_compile_options(-ftree-vectorize -ffast-math)
+endif()
+
 # Find Python and pybind11
 find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 

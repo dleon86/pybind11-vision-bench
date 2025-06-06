@@ -1,0 +1,147 @@
+% sobel_optim_beamer.tex  — LaTeX/Beamer slide deck for LinkedIn carousel
+% Compile:  latexmk -pdf sobel_optim_beamer.tex
+% Convert pages to PNG: see Makefile snippet at end.
+
+\documentclass[aspectratio=169,professionalfonts]{beamer}  % 16:9 = 1920×1080
+\usetheme{metropolis}
+
+% ---------- Packages ----------
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{siunitx}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+% ---------- Meta data ----------
+\title{Turbo‑charging the Sobel Operator}
+\subtitle{From NumPy to \num{2200}\,× with modern C++}
+\author{Daniel Leon}
+\date{\today}
+
+% ---------- Brand colours ----------
+\definecolor{speedup}{RGB}{0,128,0}      % green highlights
+\definecolor{highlight}{RGB}{255,69,0}   % orange accents
+
+% ---------- Font‑size tweaks ----------
+\setbeamerfont{normal text}{size=\small}
+\setbeamerfont{frametitle}{size=\normalsize}
+\setbeamerfont{title}{size=\large}
+
+% ---------- Helper macros ----------
+\newcommand{\fullimg}[1]{\includegraphics[width=0.90\linewidth]{#1}}
+\newcommand{\halfimg}[1]{\includegraphics[width=0.65\linewidth]{#1}}
+
+% ---------- Document ----------
+\begin{document}
+
+% ===== TITLE SLIDE =====
+\maketitle
+
+% ===== SLIDE 1 — optimisation map =====
+\begin{frame}[t]{The optimisation map}
+  \begin{columns}[T]
+    % image —— left 70 %%
+    \begin{column}{0.68\linewidth}
+      \centering
+      \fullimg{figures/optimization_techniques.png}
+    \end{column}
+
+    % text —— right 30 %%
+    \begin{column}{0.30\linewidth}
+      \begin{block}{Context}
+        \begin{itemize}
+          \item Start: textbook kernel
+          \item Add: loop unroll \(\rightarrow\) SIMD \(\rightarrow\) tiling
+          \item 15‑run mean on \num{1024}×\num{1536} gray frame
+          \item i9‑10885H 
+          \item GCC 13 
+          \item pybind11
+        \end{itemize}
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
+% ===== SLIDE 2 — the scoreboard =====
+\begin{frame}[t]{Performance scoreboard}
+  \centering
+  \fullimg{figures/performance_comparison_all_opts.png}
+  \vspace{0.4em}
+  {\Large\textcolor{speedup}{\textbf{\num{2200}× faster than NumPy}}}
+\end{frame}
+
+% ===== SLIDE 3 — quality check =====
+\begin{frame}[t]{Do the edges still look right?}
+  \centering
+  \halfimg{figures/results_quality_comparison_all_opts - crop.png}
+
+  \vspace{0.4em}
+  Bit‑wise identical gradients — speed didn’t cost accuracy.
+\end{frame}
+
+% ===== SLIDE 4 — config comparison =====
+\begin{frame}[t]{Which combo wins where?}
+  \centering
+  \halfimg{figures/grouped_by_config_speedups.png}
+
+  \vspace{0.4em}
+  \scriptsize SIMD + unroll dominates; blocking helps on big frames. Compiler flags alone leave
+  \textcolor{highlight}{\textbf{≈15\,\%}} on the table.
+\end{frame}
+
+% ===== SLIDE 5 — manual vs compiler =====
+\begin{frame}[t]{Manual vs compiler effort}
+  \centering
+  \halfimg{figures/efficiency_ratio_analysis.png}
+
+  \vspace{0.4em}
+  \begin{itemize}
+    \item Manual tweaks still deliver \textcolor{speedup}{\textbf{1.5–1.8× extra}} over \texttt{-O3 -ffast-math}
+    \item Best bang‑for‑buck: manual SIMD + \texttt{-march=native} (\textcolor{speedup}{\textbf{+9\,\%}})
+    \item Compiler flags plateau at ~20 \% — intrinsics still pay.
+  \end{itemize}
+\end{frame}
+
+% ===== SLIDE 6 — system context =====
+\begin{frame}[t]{System context & scaling}
+  \begin{columns}[T]
+    \begin{column}{0.48\linewidth}
+      \textbf{Test rig}
+      \begin{itemize}
+        \item Intel i9‑10885H @ 2.4 GHz
+        \item 32 GB RAM, AVX2
+        \item 8 cores / 16 threads
+      \end{itemize}
+    \end{column}
+    \begin{column}{0.48\linewidth}
+      \textbf{Scaling hints}
+      \begin{itemize}
+        \item Newer CPUs: +10–20 \%
+        \item Desktop clocks: +15–30 \%
+        \item AVX‑512: up to 2× for SIMD path
+        \item ARM M‑series: NEON close to AVX2
+      \end{itemize}
+    \end{column}
+  \end{columns}
+  \vspace{0.3em}
+  \scriptsize Cache blocking gets sweeter with bigger L3 caches.
+\end{frame}
+
+% ===== SLIDE 7 — repo / call‑to‑action =====
+\begin{frame}[c]{Get the code}
+  \centering
+  {\LARGE\href{https://github.com/dleon86/pybind11-vision-bench}{github.com/dleon86/pybind11-vision-bench}}
+
+  \vspace{1.5em}
+  Runs on Linux & macOS — PRs welcome for AVX‑512 or GPU ports.
+\end{frame}
+
+\end{document}
+
+%% ----------------- Makefile helper (comment) -----------------
+% png: sobel_optim_beamer.pdf
+% \t pdfseparate $< build/slide-%d.pdf
+% \t mkdir -p build/png
+% \t for f in build/slide-*.pdf; do \
+% \t   convert -density 300 $$f -resize 1920x1080 build/png/$$(basename $$f .pdf).png; \
+% \t done
